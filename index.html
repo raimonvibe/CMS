@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>HTML Generator</title>
+  </head>
+  <style>
+    body {
+      background: linear-gradient(to right, #ff758c, #ff7eb3);
+      font-family: Arial, sans-serif;
+    }
+    form {
+      max-width: 500px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    }
+    label {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      display: block;
+    }
+    input[type="text"],
+    textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    }
+    button[type="button"] {
+      width: 100%;
+      padding: 10px;
+      background-color: #ff758c;
+      color: white;
+      font-size: 18px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s ease-in-out;
+    }
+    button[type="button"]:hover {
+      background-color: #ff7eb3;
+    }
+  </style>
+  <body>
+    <form>
+      <label for="title">Title:</label>
+      <input type="text" id="title" name="title">
+      <br><br>
+      <label for="text">Text:</label>
+      <textarea id="text" name="text"></textarea>
+      <br><br>
+      <label for="image">Image:</label>
+      <input type="file" id="image" name="image">
+      <br><br>
+      <label for="video">Video:</label>
+      <input type="file" id="video" name="video" accept="video/*">
+      <br><br>
+      <button type="button" onclick="generateHTML()">Generate HTML</button>
+    </form>
+  </body>
+  <script>
+    function generateHTML() {
+      // Collect user input
+      var title = document.querySelector("#title").value;
+      var text = document.querySelector("#text").value;
+      var image = document.querySelector("#image").files[0];
+      var video = document.querySelector("#video").files[0];
+
+      // Check if the title is empty
+      if (!title) {
+        alert("Please enter a title.");
+        return;
+      }
+
+      // Check if the text is empty
+      if (!text) {
+        alert("Please enter some text.");
+        return;
+      }
+
+      // Define the HTML structure using the collected data
+      var html = '<html>' +
+                 '<head>' +
+                 '<title>' + title + '</title>' +
+                 '<style>' +
+                 'h1 {' +
+                 'font-size: 36px;' +
+                 'text-align: center;' +
+                 '}' +
+                 'p {' +
+                 'font-size: 18px;' +
+                 'text-align: justify;' +
+                 '}' +
+                 'img {' +
+                 'width: 100%;' +
+                 '}' +
+                 'video {' +
+                 'width: 100%;' +
+                 '}' +
+                 '</style>' +
+                 '</head>' +
+                 '<body>' +
+                 '<h1>' + title + '</h1>' +
+                 '<p>' + text + '</p>';
+
+
+if (image) {
+    // Create a data URL for the image
+    var reader = new FileReader();
+    reader.readAsDataURL(image);
+    reader.onload = function() {
+      var imageData = reader.result;
+      html += '<img src="' + imageData + '" alt="' + title + '">';
+
+      if (video) {
+        // Create a data URL for the video
+        var reader = new FileReader();
+        reader.readAsDataURL(video);
+        reader.onload = function() {
+          var videoData = reader.result;
+          html += '<video controls>' +'<source src="' + videoData + '" type="' + video.type + '">' + 'Your browser does not support the video tag.' + '</video>';
+
+
+
+// Add error handling for the video reader
+reader.onerror = function() {
+  alert("Failed to load the video file. Please try again.");
+}
+
+// Create a new Blob object containing the HTML content
+var blob = new Blob([html], { type: "text/html" });
+
+// Create a download link for the HTML file
+var a = document.createElement("a");
+a.download = "generated.html";
+a.href = URL.createObjectURL(blob);
+a.click();
+}
+}
+}
+// Add error handling for the image reader
+reader.onerror = function() {
+alert("Failed to load the image file. Please try again.");
+}
+} else {
+// If no image is selected, show an error message
+alert("Please select an image file.");
+}
+}
+</script>
+</html>
