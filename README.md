@@ -1,5 +1,9 @@
 # CMS (HTML Generator)
 
+**[Try it live!](https://raimonvibe.github.io/CMS/)**
+
+![HTML Generator Demo](assets/images/demo-screenshot.png)
+
 A simple, client-side HTML Generator that allows you to create basic HTML pages with text, images, and videos. The application uses the FileReader API to embed media files directly in the generated HTML, making it easy to create self-contained web pages.
 
 ## Features
