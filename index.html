@@ -96,30 +96,38 @@
 
         // Validate image file if provided
         if (image) {
+          console.log("Validating image file:", image.name, "Type:", image.type);
           const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
           if (!validImageTypes.includes(image.type)) {
+            console.error("Invalid image type:", image.type);
             alert("Please select a valid image file (JPEG, PNG, GIF, or WEBP).");
             return;
           }
           // Check file size (max 5MB)
           if (image.size > 5 * 1024 * 1024) {
+            console.error("Image too large:", image.size, "bytes");
             alert("Image file is too large. Please select an image under 5MB.");
             return;
           }
+          console.log("Image validation passed");
         }
 
         // Validate video file if provided
         if (video) {
+          console.log("Validating video file:", video.name, "Type:", video.type, "Size:", video.size);
           const validVideoTypes = ['video/mp4', 'video/webm', 'video/ogg'];
           if (!validVideoTypes.includes(video.type)) {
+            console.error("Invalid video type:", video.type);
             alert("Please select a valid video file (MP4, WebM, or OGG).");
             return;
           }
           // Check file size (max 50MB)
           if (video.size > 50 * 1024 * 1024) {
+            console.error("Video too large:", video.size, "bytes");
             alert("Video file is too large. Please select a video under 50MB.");
             return;
           }
+          console.log("Video validation passed");
         }
 
         // Start building HTML structure
@@ -207,6 +215,9 @@
 
         // Close HTML tags
         html += '</body>\n</html>';
+
+        // Log generated HTML for verification
+        console.log('Generated HTML:', html);
 
         // Create and trigger download
         const blob = new Blob([html], { type: "text/html" });
