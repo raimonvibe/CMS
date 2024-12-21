@@ -66,93 +66,160 @@
     </form>
   </body>
   <script>
-    function generateHTML() {
-      // Collect user input
-      var title = document.querySelector("#title").value;
-      var text = document.querySelector("#text").value;
-      var image = document.querySelector("#image").files[0];
-      var video = document.querySelector("#video").files[0];
+    // Helper function to read file as data URL
+    function readFileAsync(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
 
-      // Check if the title is empty
-      if (!title) {
-        alert("Please enter a title.");
-        return;
+    async function generateHTML() {
+      try {
+        // Collect user input
+        const title = document.querySelector("#title").value;
+        const text = document.querySelector("#text").value;
+        const image = document.querySelector("#image").files[0];
+        const video = document.querySelector("#video").files[0];
+
+        // Validate required fields
+        if (!title) {
+          alert("Please enter a title.");
+          return;
+        }
+        if (!text) {
+          alert("Please enter some text.");
+          return;
+        }
+
+        // Validate image file if provided
+        if (image) {
+          const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+          if (!validImageTypes.includes(image.type)) {
+            alert("Please select a valid image file (JPEG, PNG, GIF, or WEBP).");
+            return;
+          }
+          // Check file size (max 5MB)
+          if (image.size > 5 * 1024 * 1024) {
+            alert("Image file is too large. Please select an image under 5MB.");
+            return;
+          }
+        }
+
+        // Validate video file if provided
+        if (video) {
+          const validVideoTypes = ['video/mp4', 'video/webm', 'video/ogg'];
+          if (!validVideoTypes.includes(video.type)) {
+            alert("Please select a valid video file (MP4, WebM, or OGG).");
+            return;
+          }
+          // Check file size (max 50MB)
+          if (video.size > 50 * 1024 * 1024) {
+            alert("Video file is too large. Please select a video under 50MB.");
+            return;
+          }
+        }
+
+        // Start building HTML structure
+        let html = '<!DOCTYPE html>\n<html lang="en">\n' +
+                  '<head>\n' +
+                  '<meta charset="utf-8">\n' +
+                  '<title>' + title + '</title>\n' +
+                  '<style>\n' +
+                  'h1 {\n' +
+                  '  font-size: 36px;\n' +
+                  '  text-align: center;\n' +
+                  '}\n' +
+                  'p {\n' +
+                  '  font-size: 18px;\n' +
+                  '  text-align: justify;\n' +
+                  '}\n' +
+                  'img, video {\n' +
+                  '  max-width: 100%;\n' +
+                  '  display: block;\n' +
+                  '  margin: 20px auto;\n' +
+                  '}\n' +
+                  '</style>\n' +
+                  '</head>\n' +
+                  '<body>\n' +
+                  '<h1>' + title + '</h1>\n' +
+                  '<p>' + text + '</p>\n';
+
+        // Process image and video in parallel if they exist
+        const mediaPromises = [];
+        let imageData = null;
+        let videoData = null;
+
+        if (image) {
+          mediaPromises.push(
+            readFileAsync(image)
+              .then(data => { 
+                imageData = data;
+                console.log("Image loaded successfully");
+              })
+              .catch((error) => {
+                console.error("Image loading error:", error);
+                throw new Error(`Failed to load the image file: ${error.message || 'Unknown error'}`);
+              })
+          );
+        } else {
+          console.log("No image selected - continuing without image");
+        }
+
+        if (video) {
+          mediaPromises.push(
+            readFileAsync(video)
+              .then(data => { 
+                videoData = data;
+                console.log("Video loaded successfully");
+              })
+              .catch((error) => {
+                console.error("Video loading error:", error);
+                throw new Error(`Failed to load the video file: ${error.message || 'Unknown error'}`);
+              })
+          );
+        } else {
+          console.log("No video selected - continuing without video");
+        }
+
+        // Wait for all media to load
+        if (mediaPromises.length > 0) {
+          try {
+            await Promise.all(mediaPromises);
+          } catch (error) {
+            console.error("Media loading failed:", error);
+            throw error; // Re-throw to be caught by the main try-catch block
+          }
+        }
+
+        // Add media elements to HTML if they were loaded
+        if (imageData) {
+          html += '<img src="' + imageData + '" alt="' + title + '">\n';
+        }
+        if (videoData) {
+          html += '<video controls>\n' +
+                 '<source src="' + videoData + '" type="' + video.type + '">\n' +
+                 'Your browser does not support the video tag.\n' +
+                 '</video>\n';
+        }
+
+        // Close HTML tags
+        html += '</body>\n</html>';
+
+        // Create and trigger download
+        const blob = new Blob([html], { type: "text/html" });
+        const a = document.createElement("a");
+        a.download = "generated.html";
+        a.href = URL.createObjectURL(blob);
+        a.click();
+
+        // Clean up the URL object
+        URL.revokeObjectURL(a.href);
+      } catch (error) {
+        alert(error.message);
       }
-
-      // Check if the text is empty
-      if (!text) {
-        alert("Please enter some text.");
-        return;
-      }
-
-      // Define the HTML structure using the collected data
-      var html = '<html>' +
-                 '<head>' +
-                 '<title>' + title + '</title>' +
-                 '<style>' +
-                 'h1 {' +
-                 'font-size: 36px;' +
-                 'text-align: center;' +
-                 '}' +
-                 'p {' +
-                 'font-size: 18px;' +
-                 'text-align: justify;' +
-                 '}' +
-                 'img {' +
-                 'width: 100%;' +
-                 '}' +
-                 'video {' +
-                 'width: 100%;' +
-                 '}' +
-                 '</style>' +
-                 '</head>' +
-                 '<body>' +
-                 '<h1>' + title + '</h1>' +
-                 '<p>' + text + '</p>';
-
-
-if (image) {
-    // Create a data URL for the image
-    var reader = new FileReader();
-    reader.readAsDataURL(image);
-    reader.onload = function() {
-      var imageData = reader.result;
-      html += '<img src="' + imageData + '" alt="' + title + '">';
-
-      if (video) {
-        // Create a data URL for the video
-        var reader = new FileReader();
-        reader.readAsDataURL(video);
-        reader.onload = function() {
-          var videoData = reader.result;
-          html += '<video controls>' +'<source src="' + videoData + '" type="' + video.type + '">' + 'Your browser does not support the video tag.' + '</video>';
-
-
-
-// Add error handling for the video reader
-reader.onerror = function() {
-  alert("Failed to load the video file. Please try again.");
-}
-
-// Create a new Blob object containing the HTML content
-var blob = new Blob([html], { type: "text/html" });
-
-// Create a download link for the HTML file
-var a = document.createElement("a");
-a.download = "generated.html";
-a.href = URL.createObjectURL(blob);
-a.click();
-}
-}
-}
-// Add error handling for the image reader
-reader.onerror = function() {
-alert("Failed to load the image file. Please try again.");
-}
-} else {
-// If no image is selected, show an error message
-alert("Please select an image file.");
-}
-}
-</script>
+    }
+  </script>
 </html>
